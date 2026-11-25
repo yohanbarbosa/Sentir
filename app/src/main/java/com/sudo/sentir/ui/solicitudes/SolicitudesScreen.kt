@@ -67,14 +67,20 @@ val solicitudes = listOf(
 )
 
 // ---------- Pantalla ----------
+
 @Composable
-fun SolicitudesScreen(onVerDetalle: (String) -> Unit) {
+fun SolicitudesScreen(
+    onVerDetalle: (String) -> Unit,
+    onTabSelected: (Int) -> Unit = {}
+) {
+
+
     var tab by remember { mutableIntStateOf(0) }
 
     Scaffold(
+        bottomBar = { BarraNavegacion(0) { onTabSelected(it) } },
         containerColor = Fondo,
         topBar = { Header() },
-        bottomBar = { BarraNavegacion(tab) { tab = it } }
     ) { padding ->
         LazyColumn(
             modifier = Modifier.padding(padding).fillMaxSize(),
