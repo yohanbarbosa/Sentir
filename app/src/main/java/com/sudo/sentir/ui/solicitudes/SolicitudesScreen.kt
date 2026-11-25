@@ -1,19 +1,15 @@
 package com.sudo.sentir.ui.solicitudes
 
-
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,11 +21,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 // ---------- Colores ----------
-private val HeaderColor = Color(0xFF1E293B)
-private val Fondo = Color(0xFFF1F5F9)
-private val Texto = Color(0xFF334155)
-private val TextoSuave = Color(0xFF64748B)
-private val Link = Color(0xFF1D4ED8)
+val HeaderColor = Color(0xFF1E293B)
+val Fondo = Color(0xFFF1F5F9)
+val Texto = Color(0xFF334155)
+val TextoSuave = Color(0xFF64748B)
+val Link = Color(0xFF1D4ED8)
 
 // ---------- Modelo ----------
 enum class Prioridad(val label: String, val fg: Color, val bg: Color) {
@@ -44,21 +40,35 @@ data class Solicitud(
     val direccion: String,
     val personas: Int,
     val prioridad: Prioridad,
-    val estado: String
+    val estado: String,
+    val descripcion: String = "",
+    val coordenadas: String = ""
 )
 
-private val solicitudes = listOf(
-    Solicitud("SOL-104", "Rescate", "Calle 45 # 12-88", 3, Prioridad.CRITICA, "Pendiente"),
-    Solicitud("SOL-105", "Médica", "Av. Central #89", 1, Prioridad.CRITICA, "Pendiente"),
-    Solicitud("SOL-102", "Evacuación", "Carrera 10 # 34", 5, Prioridad.ALTA, "En Proceso"),
-    Solicitud("SOL-099", "Víveres", "Diagonal 4 # 12", 2, Prioridad.MEDIA, "En Proceso")
+// Pública (sin private) para que el NavHost y PantallaDetalle puedan usarla
+val solicitudes = listOf(
+    Solicitud(
+        "SOL-104", "Rescate", "Calle 45 # 12-88", 3, Prioridad.CRITICA, "Pendiente",
+        descripcion = "Extracción de escombros y atención por colapso de pared interna.",
+        coordenadas = "4.6097, -74.0817"
+    ),
+    Solicitud(
+        "SOL-105", "Médica", "Av. Central #89", 1, Prioridad.CRITICA, "Pendiente",
+        descripcion = "Atención médica urgente.", coordenadas = "4.6100, -74.0800"
+    ),
+    Solicitud(
+        "SOL-102", "Evacuación", "Carrera 10 # 34", 5, Prioridad.ALTA, "En Proceso",
+        descripcion = "Evacuación de familias de zona de riesgo.", coordenadas = "4.6050, -74.0750"
+    ),
+    Solicitud(
+        "SOL-099", "Víveres", "Diagonal 4 # 12", 2, Prioridad.MEDIA, "En Proceso",
+        descripcion = "Entrega de alimentos y agua.", coordenadas = "4.6000, -74.0700"
+    )
 )
-
-
 
 // ---------- Pantalla ----------
 @Composable
-fun SolicitudesScreen() {
+fun SolicitudesScreen(onVerDetalle: (String) -> Unit) {
     var tab by remember { mutableIntStateOf(0) }
 
     Scaffold(
@@ -82,7 +92,9 @@ fun SolicitudesScreen() {
                 Spacer(Modifier.height(10.dp))
                 Seccion("SOLICITUDES DE ASISTENCIA")
             }
-            items(solicitudes) { ItemSolicitud(it) }
+            items(solicitudes) { s ->
+                ItemSolicitud(s, onClick = { onVerDetalle(s.codigo) })
+            }
         }
     }
 }
@@ -135,7 +147,7 @@ fun Resumen(numero: String, etiqueta: String, p: Prioridad, modifier: Modifier =
 }
 
 @Composable
-fun ItemSolicitud(s: Solicitud) {
+fun ItemSolicitud(s: Solicitud, onClick: () -> Unit) {
     val estadoColor = when {
         s.estado == "Pendiente" -> Prioridad.CRITICA.fg
         s.prioridad == Prioridad.ALTA -> Prioridad.ALTA.fg
@@ -143,6 +155,7 @@ fun ItemSolicitud(s: Solicitud) {
     }
 
     Card(
+        onClick = onClick,
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(1.dp),
@@ -200,15 +213,16 @@ fun ItemSolicitud(s: Solicitud) {
             }
         }
     }
-}
+}   // <-- aquí termina ItemSolicitud
 
+// BarraNavegacion va FUERA de ItemSolicitud, a nivel superior
 @Composable
 fun BarraNavegacion(seleccionado: Int, onSelect: (Int) -> Unit) {
     val items: List<Pair<String, ImageVector>> = listOf(
-        "Solicitudes" to Icons.Default.List,
-        "Mapa" to Icons.Default.Place,
-        "Navegación" to Icons.Default.LocationOn,
-        "Personas" to Icons.Default.Person
+        "Solicitudes" to Icons.AutoMirrored.Filled.List,
+        "Mapa" to Icons.Default.Map,
+        "Navegación" to Icons.Default.Explore,
+        "Personas" to Icons.Default.Groups
     )
     NavigationBar(containerColor = Color.White) {
         items.forEachIndexed { i, (titulo, icono) ->
