@@ -1,26 +1,38 @@
 package com.sudo.sentir.ui.solicitudes
 
-data class SolicitudesViewModel(
-    val codigo: String,
-    val tipo: String,
-    val direccion: String,
-    val personas: Int,
-    val prioridad: Prioridad,
-    val estado: String,
-    val descripcion: String = "",
-    val coordenadas: String = ""
-)
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
+import androidx.lifecycle.ViewModel
+import com.sudo.sentir.ui.Personas.EstadoPersona
+import com.sudo.sentir.ui.Personas.Persona
 
-private val solicitudesViewModel = listOf(
-    SolicitudesViewModel(
-        "SOL-104", "Rescate", "Calle 45 # 12-88", 3, Prioridad.CRITICA, "Pendiente",
-        descripcion = "Extracción de escombros y atención por colapso de pared interna.",
-        coordenadas = "4.6097, -74.0817"
-    ),
-    SolicitudesViewModel("SOL-105", "Médica", "Av. Central #89", 1, Prioridad.CRITICA, "Pendiente",
-        descripcion = "Atención médica urgente.", coordenadas = "4.6100, -74.0800"),
-    SolicitudesViewModel("SOL-102", "Evacuación", "Carrera 10 # 34", 5, Prioridad.ALTA, "En Proceso",
-        descripcion = "Evacuación de familias de zona de riesgo.", coordenadas = "4.6050, -74.0750"),
-    SolicitudesViewModel("SOL-099", "Víveres", "Diagonal 4 # 12", 2, Prioridad.MEDIA, "En Proceso",
-        descripcion = "Entrega de alimentos y agua.", coordenadas = "4.6000, -74.0700")
-)
+class SolicitudesViewModel : ViewModel() {
+
+    private val personasPorSolicitud = mutableStateMapOf<String, SnapshotStateList<Persona>>()
+    private val inicios = mutableMapOf<String, Long>()
+
+    /** Crea la lista la primera vez (según s.personas) y la reutiliza después. */
+    fun personasDe(s: Solicitud): SnapshotStateList<Persona> =
+        personasPorSolicitud.getOrPut(s.codigo) {
+            inicios[s.codigo] = System.currentTimeMillis()   // inicia el cronómetro
+            List(s.personas) { i ->
+                Persona(i + 1, "Persona #${i + 1}", "Edad no registrada", EstadoPersona.HERIDA)
+            }.toMutableStateList()
+        }
+
+    fun guardar(codigo: String, persona: Persona) {
+        val lista = personasPorSolicitud[codigo] ?: return
+        val idx = lista.indexOfFirst { it.id == persona.id }
+        if (idx >= 0) lista[idx] = persona
+    }
+
+    /** true cuando ya nadie está en estado Herida. */
+    fun asistenciaCompleta(codigo: String): Boolean =
+        personasPorSolicitud[codigo]?.none { it.estado == EstadoPersona.HERIDA } ?: false
+
+    fun minutosRespuesta(codigo: String): Int {
+        val inicio = inicios[codigo] ?: return 0
+        return ((System.currentTimeMillis() - inicio) / 60_000).toInt().coerceAtLeast(1)
+    }
+}

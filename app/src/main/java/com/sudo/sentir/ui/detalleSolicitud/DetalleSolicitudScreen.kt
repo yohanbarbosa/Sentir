@@ -34,7 +34,7 @@ import com.sudo.sentir.ui.solicitudes.Solicitud
 import com.sudo.sentir.ui.solicitudes.TextoSuave
 
 @Composable
-fun DetalleSolicitudScreen(s: Solicitud, onBack: () -> Unit) {
+fun DetalleSolicitudScreen(s: Solicitud, onBack: () -> Unit,onActualizar: ()->Unit) {
     Scaffold (
         containerColor = Color(0xFFF8FAFC),
         topBar = {
@@ -72,16 +72,30 @@ fun DetalleSolicitudScreen(s: Solicitud, onBack: () -> Unit) {
             }
         },
         bottomBar = {
-            Button(
-                onClick = { /* abrir mapa/navegación */ },
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .padding(16.dp)
-            ) {
-                Text("Trazar Ruta de Navegación →", fontWeight = FontWeight.Bold)
+            Column(){
+                Button(
+                    onClick = onActualizar,
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(16.dp)
+                ) {
+                    Text("Actualizar estado", fontWeight = FontWeight.Bold)
+                }
+
+                Button(
+                    onClick = { /* abrir mapa/navegación */ },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(16.dp)
+                ) {
+                    Text("Trazar Ruta de Navegación →", fontWeight = FontWeight.Bold)
+                }
             }
         }
     ) { padding ->

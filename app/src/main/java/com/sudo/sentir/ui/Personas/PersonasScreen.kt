@@ -49,22 +49,17 @@ data class Persona(
 // ---------- Pantalla ----------
 @Composable
 fun PersonasScreen(
-    codigoSolicitud: String = "SOL-104",
+    codigoSolicitud: String,
+    personas: List<Persona>,
+    onGuardar: (Persona) -> Unit,
+    onFinalizar: () -> Unit,
     onTabSelected: (Int) -> Unit = {}
 ) {
-    val personas = remember {
-        mutableStateListOf(
-            Persona(1, "Persona #1 (Masculino)", "35 años aprox.", EstadoPersona.HERIDA,
-                "Paciente estable. Presenta laceración leve en brazo derecho. Se inmoviliza."),
-            Persona(2, "Persona #2 (Femenino)", "28 años aprox.", EstadoPersona.ESTABLE)
-        )
-    }
     var seleccionada by remember { mutableIntStateOf(0) }
 
-    // Borradores: se reinician al cambiar de persona
     var estadoSel by remember(seleccionada) { mutableStateOf(personas[seleccionada].estado) }
     var observacion by remember(seleccionada) { mutableStateOf(personas[seleccionada].observacion) }
-
+    // ... el resto igual
     Scaffold(
         containerColor = Color(0xFFF8FAFC),
         topBar = {
@@ -143,9 +138,11 @@ fun PersonasScreen(
 
             Button(
                 onClick = {
-                    personas[seleccionada] = personas[seleccionada].copy(
-                        estado = estadoSel,
-                        observacion = observacion
+                    onGuardar(
+                        personas[seleccionada].copy(
+                            estado = estadoSel,
+                            observacion = observacion
+                        )
                     )
                 },
                 shape = RoundedCornerShape(8.dp),
@@ -153,6 +150,16 @@ fun PersonasScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Guardar Estado de Persona", fontWeight = FontWeight.Bold)
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            OutlinedButton(
+                onClick = onFinalizar,
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Finalizar asistencia", fontWeight = FontWeight.Bold)
             }
         }
     }
